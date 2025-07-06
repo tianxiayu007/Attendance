@@ -179,6 +179,7 @@ jobs:
           echo "文件总数: $(find artifacts -type f | wc -l)"
 
           mkdir ./artifacts_done
+          chmod -R 755 artifacts
           cd artifacts
           for x in `ls`; do
             cd $x;
