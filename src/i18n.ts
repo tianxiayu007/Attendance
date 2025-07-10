@@ -4,11 +4,13 @@ import { createI18n } from 'vue-i18n';
 const messages = {
   en: {
     convert: 'Convert',
+    import: 'Import',
     language: 'English',
     choose_file:'Choose file'
   },
   zh: {
     convert: '转换',
+    import: '导入',
     language: '中文',
     choose_file:'选择文件'
   }
