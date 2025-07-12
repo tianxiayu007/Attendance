@@ -130,7 +130,7 @@ pub fn handle_attendance(src_path: &Path) -> Result<(), anyhow::Error> {
 
     // 准备输出路径
     let output_path = src_path.with_file_name(format!(
-        "{}_process.xlsx",
+        "{}_report.xlsx",
         src_path.file_stem().unwrap().to_string_lossy()
     ));
 
