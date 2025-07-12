@@ -1,20 +1,12 @@
-use anyhow::{anyhow, Result};
+use crate::util::read_json_config;
+use anyhow::{Result, anyhow};
 use calamine::{RangeDeserializerBuilder, Reader, open_workbook_auto};
 use chrono::{Datelike, NaiveDate, Weekday};
-use indexmap::IndexMap;
 use regex::Regex;
 use rust_xlsxwriter::{Color, Format, FormatAlign, FormatBorder, Workbook};
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
-use std::env;
-use std::ffi::OsStr;
-
-#[derive(Debug, Deserialize)]
-struct Departments {
-    #[serde(flatten)] // 展开所有顶层属性
-    departments: IndexMap<String, IndexMap<String, String>>,
-}
+use std::path::Path;
 
 // 定义数据结构
 #[derive(Deserialize)]
@@ -47,13 +39,6 @@ where
     }
 }
 
-fn read_json_config(path: &Path) -> Result<Departments> {
-    let file = std::fs::File::open(path)?;
-    let reader = std::io::BufReader::new(file);
-    let config: Departments = serde_json::from_reader(reader)?;
-    Ok(config)
-}
-
 // 提取请假原因
 fn extract_reason(clock_status: &str) -> String {
     let re = Regex::new(r"请假\((.*?)\)").unwrap();
@@ -83,31 +68,9 @@ fn date_to_weekday(date: &NaiveDate) -> &'static str {
     }
 }
 
-pub fn get_current_dir() -> PathBuf {
-    let exe_path = env::current_exe().expect("无法获取可执行文件路径");
-    
-    if cfg!(target_os = "macos") {
-        let mut path = exe_path.clone();
-        while path.pop() {
-            if path.extension() == Some(OsStr::new("app")) 
-                && path.join("Contents/MacOS").exists() 
-            {
-                return path.parent().unwrap().to_path_buf();
-            }
-        }
-    }
-    
-    exe_path.parent().unwrap().to_path_buf()
-}
-
 // 主处理函数
 pub fn handle_attendance(src_path: &Path) -> Result<(), anyhow::Error> {
-    let config_path = get_current_dir().join("baobiao.json");
-    if !config_path.is_file() {
-        return Err(anyhow!("配置文件baobiao.json不存在"));
-    }
-    let json_config =
-        read_json_config(&config_path).map_err(|e| anyhow!("读取配置文件失败: {}", e))?;
+    let json_config = read_json_config().map_err(|e| anyhow!("读取配置文件失败: {}", e))?;
 
     if !src_path.is_file() {
         return Err(anyhow!("源文件不存在"));
@@ -167,7 +130,7 @@ pub fn handle_attendance(src_path: &Path) -> Result<(), anyhow::Error> {
 
     // 准备输出路径
     let output_path = src_path.with_file_name(format!(
-        "{}_process.xlsx",
+        "{}_report.xlsx",
         src_path.file_stem().unwrap().to_string_lossy()
     ));
 
