@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 // 定义数据结构
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct Record {
     #[serde(rename = "人员名称")]
     person: String,
@@ -93,29 +93,36 @@ pub fn handle_attendance(src_path: &Path) -> Result<(), anyhow::Error> {
         .map_err(|_| anyhow!("找不到 '考勤记录' 工作表"))?;
 
     // 反序列化数据
-    let mut records: Vec<Record> = RangeDeserializerBuilder::new()
+    let records: Vec<Record> = RangeDeserializerBuilder::new()
         .from_range(&range)?
         .filter_map(Result::ok)
         .collect();
 
     // 过滤无效记录
-    records.retain(|r| {
-        !r.date.is_none()
-            && !r.clock_time.is_empty()
-            && !r.clock_status.is_empty()
-            && !r.clock_status.contains("出差")
-    });
+    let filtered_records: Vec<Record> = records
+        .iter()
+        .filter(|r| {
+            r.date.is_some()
+                && !r.clock_time.is_empty()
+                && !r.clock_status.is_empty()
+                && !r.clock_status.contains("出差")
+        })
+        .cloned()
+        .collect();
 
-    // 获取日期频率
-    let date_counts = records.iter().fold(HashMap::new(), |mut map, record| {
-        *map.entry(record.date.clone()).or_insert(0) += 1;
-        map
-    });
+    // 获取日期频率（使用过滤后的记录）
+    let date_counts = filtered_records
+        .iter()
+        .fold(HashMap::new(), |mut map, record| {
+            *map.entry(record.date.clone()).or_insert(0) += 1;
+            map
+        });
 
     // 找出高频日期（>30次）
     let mut dates_abnormal: Vec<NaiveDate> = date_counts
         .into_iter()
-        .filter_map(|(date_opt, count)| if count > 30 { date_opt } else { None })
+        .filter_map(|(date_opt, count)| (count > 30).then(|| date_opt))
+        .flatten()
         .collect();
     dates_abnormal.sort();
 
