@@ -34,7 +34,6 @@ pub fn handle_import(src_path: &Path) -> Result<(), anyhow::Error> {
     for (_, names_map) in &json_config.departments {
         names_map_extend.extend(names_map.clone());
     }
-    println!("{:?}", names_map_extend);
 
     let raw_bytes = std::fs::read(src_path)?;
     let (cow, _, _) = UTF_8.decode(&raw_bytes);
@@ -46,7 +45,7 @@ pub fn handle_import(src_path: &Path) -> Result<(), anyhow::Error> {
     sheet.write_row(0, 0, ["姓名", "账号", "打卡时间"])?;
     let mut row_start = 1;
     for record in table_data {
-        let time_in_or_out_str = record.time_in_or_out.format("%Y-%m-%d %H:%M").to_string();
+        let time_in_or_out_str = record.time_in_or_out.format("%Y-%m-%d %H:%M:%S").to_string();
         sheet.write_row(
             row_start,
             0,
