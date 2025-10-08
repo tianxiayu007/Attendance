@@ -3,6 +3,7 @@ import i18n from './i18n'
 import App from './App.vue'
 import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 createApp(App).use(i18n).use(PrimeVue, {
     theme: {
@@ -16,4 +17,6 @@ createApp(App).use(i18n).use(PrimeVue, {
             },
         },
     },
-}).mount('#app')
+}).mount('#app').$nextTick(() => {
+    getCurrentWindow().show();
+});
