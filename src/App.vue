@@ -49,7 +49,7 @@ async function openFile(flag: boolean) {
     </TabList>
     <TabPanels>
       <TabPanel value="0">
-        <div class="flex justify-center mb-8">
+        <div>
           <InputText v-model="importFile" :placeholder="$t('choose_file')" style="width: 500px;margin-right: 8px;" />
           <Button label="Submit" @click="openFile(true)" style="margin-right: 8px;">{{ $t('choose_file') }}</Button>
           <Button @click="importConvert">{{ $t('import') }}</Button>
@@ -57,7 +57,7 @@ async function openFile(flag: boolean) {
       </TabPanel>
 
       <TabPanel value="1">
-        <div class="flex justify-center mb-8">
+        <div>
           <InputText v-model="selectFile" :placeholder="$t('choose_file')" style="width: 500px;margin-right: 8px;" />
           <Button label="Submit" @click="openFile(false)" style="margin-right: 8px;">{{ $t('choose_file') }}</Button>
           <Button @click="attendanceConvert">{{ $t('convert') }}</Button>
@@ -85,5 +85,17 @@ async function openFile(flag: boolean) {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+}
+
+.p-tabpanel {
+  width: 100%;
+  height: auto;
+  min-height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.p-tab {
+  font-size: 14px;
 }
 </style>

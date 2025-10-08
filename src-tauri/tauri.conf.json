@@ -13,7 +13,7 @@
     "windows": [
       {
         "title": "考勤报表",
-        "width": 800,
+        "width": 750,
         "height": 170,
         "resizable": false,
         "devtools": true,
