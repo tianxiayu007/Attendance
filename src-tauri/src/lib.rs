@@ -7,8 +7,8 @@ use std::path::Path;
 fn import_convert(file: &str) -> String {
     let src_path = Path::new(file);
     return match import_convert::handle_import(src_path) {
-        Ok(_) => "转换成功".to_string(),
-        Err(e) => format!("{}", e),
+        Ok(_) => format!("已生成 OA 导入文件：{}", output_file_name(src_path, "_oa.xlsx")),
+        Err(e) => format!("导入失败：{}", e),
     };
 }
 
@@ -16,9 +16,21 @@ fn import_convert(file: &str) -> String {
 fn attendance_convert(file: &str) -> String {
     let src_path = Path::new(file);
     return match attendance::handle_attendance(src_path) {
-        Ok(_) => "转换成功".to_string(),
-        Err(e) => format!("{}", e),
+        Ok(_) => format!(
+            "已生成考勤报表：{}",
+            output_file_name(src_path, "_report.xlsx")
+        ),
+        Err(e) => format!("生成报表失败：{}", e),
     };
+}
+
+/// 根据源文件推断输出文件名，仅用于界面提示。
+fn output_file_name(src_path: &Path, suffix: &str) -> String {
+    let stem = src_path
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "考勤文件".to_string());
+    format!("{}{}", stem, suffix)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
