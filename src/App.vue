@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Button, InputText, Message } from 'primevue';
+import { Button, InputText, Message, ToggleSwitch } from 'primevue';
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
@@ -19,6 +19,8 @@ const activeTab = ref("0");
 const busy = ref<"import" | "report" | null>(null);
 const status = ref<Record<"0" | "1", Status>>({ "0": null, "1": null });
 const options = ref(['导入考勤', '生成报表']);
+/** 拖入文件后是否自动执行当前页签的操作，默认开启 */
+const autoRun = ref(true);
 
 let unlisten: (() => void) | undefined;
 
@@ -115,7 +117,16 @@ onMounted(async () => {
     // 一次拖入两个文件时，按“导入考勤 / 生成报表”两个页签依次填充
     setFile("0", paths[0]);
     setFile("1", paths.length > 1 ? paths[1] : paths[0]);
-    setStatus(activeTab.value === "0" ? "0" : "1", {
+
+    const tab: "0" | "1" = activeTab.value === "0" ? "0" : "1";
+
+    if (autoRun.value && busy.value === null) {
+      // 自动执行当前页签的操作，运行结果由 run() 写入状态提示
+      void run(tab);
+      return;
+    }
+
+    setStatus(tab, {
       kind: 'success',
       text: paths.length > 1
         ? `已识别 2 个文件：${fileOf(paths[0])}、${fileOf(paths[1])}`
@@ -134,6 +145,10 @@ onUnmounted(() => {
   <main class="page">
     <section class="drop-zone" :class="{ active: dragging, ready: !!currentFile && !dragging }"
       @click="openFile(activeTab === '0' ? '0' : '1')">
+      <div class="auto-run" @click.stop>
+        <ToggleSwitch v-model="autoRun" inputId="autoRun" />
+        <label for="autoRun">{{ $t('auto_run') }}</label>
+      </div>
       <p class="drop-title">{{ $t('drop_hint') }}</p>
       <p class="drop-sub">{{ $t('drop_sub_hint') }}</p>
       <p class="file-name" :class="{ placeholder: !currentFile }">
@@ -213,6 +228,7 @@ body {
 }
 
 .drop-zone {
+  position: relative;
   border: 2px dashed #b9c2cf;
   border-radius: 10px;
   background: #ffffff;
@@ -232,6 +248,23 @@ body {
 .drop-zone.ready {
   border-style: solid;
   border-color: #34a853;
+}
+
+.auto-run {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #4b5563;
+  cursor: default;
+}
+
+.auto-run label {
+  cursor: pointer;
+  user-select: none;
 }
 
 .drop-title {
