@@ -18,8 +18,15 @@
 ## 安装与使用
 
 1. 在 Releases 下载对应平台的包：
-   - **Windows**：`Attendance-windows-x86_64-setup.exe` —— **单个安装包，装完即用**，
-     无需联网、无需另外安装 WebView2 或 VC++ 运行库
+
+   **Windows（三种产物，按需选择）**
+
+   | 文件 | 特点 | 适用场景 |
+   | --- | --- | --- |
+   | `Attendance-windows-x86_64-setup.exe` | 静态链接 CRT + 内置 WebView2 离线运行时，**单个安装包零依赖** | 首选，装完即用，不联网、不需要任何运行库 |
+   | `Attendance-windows-x86_64-dynamic-setup.exe` | **动态链接** CRT（体积更小），同样内置 WebView2 运行时 | 目标机器已安装 VC++ 运行库 |
+   | `Attendance-windows-x86_64-portable.exe`、`...-dynamic-portable.exe` | 免安装裸 exe（静态 / 动态两份） | 绿色使用 |
+
    - macOS：`Attendance-macos-aarch64.zip` → 解压得到 `考勤报表.app`
    - Linux：`Attendance-linux-x86_64.zip` → 解压得到 `.deb` 安装包
 2. 把 `baobiao.json` 放在与程序（macOS 为 `.app`）**同一目录**。
@@ -27,12 +34,12 @@
 
 ### Windows 运行时依赖说明（当前为零依赖）
 
-| 组件 | 处理方式 |
-| --- | --- |
-| **VC++ 运行库**（`vcruntime140.dll`、`msvcp140.dll`） | 构建时注入 `RUSTFLAGS=-C target-feature=+crt-static`，把 MSVC 运行库静态链接进主程序，目标机器无需安装 |
-| **WebView2 Runtime** | 安装包内置微软官方 WebView2 运行时安装器（`webviewInstallMode = offlineInstaller`），安装时静默安装，**无需联网** |
+| 组件 | 静态版 | 动态版 |
+| --- | --- | --- |
+| **VC++ 运行库**（`vcruntime140.dll`、`msvcp140.dll`） | 构建注入 `RUSTFLAGS=-C target-feature=+crt-static`，MSVC 运行库**静态链接**进主程序，目标机器无需安装 | 保持默认动态链接，体积更小，要求系统已装 VC++ 运行库 |
+| **WebView2 Runtime** | 安装包内置微软官方运行时安装器（`webviewInstallMode = offlineInstaller`），静默安装、**无需联网** | 同上 |
 
-因此 Windows 只发布一个 `setup.exe`（约 210MB，因为内含 WebView2 运行时安装器）。
+两种 Windows 产物由 CI 矩阵任务并行构建（`WINDOWS_KIND=static` / `dynamic`），都可在 Release 中下载。
 
 ### macOS 首次打开提示“已损坏”或“无法验证开发者”
 
