@@ -17,9 +17,22 @@
 
 ## 安装与使用
 
-1. 在 Releases 下载对应平台压缩包并解压（macOS 得到 `考勤报表.app`）。
+1. 在 Releases 下载对应平台的包：
+   - **Windows**：`Attendance-windows-x86_64-setup.exe` —— **单个安装包，装完即用**，
+     无需联网、无需另外安装 WebView2 或 VC++ 运行库
+   - macOS：`Attendance-macos-aarch64.zip` → 解压得到 `考勤报表.app`
+   - Linux：`Attendance-linux-x86_64.zip` → 解压得到 `.deb` 安装包
 2. 把 `baobiao.json` 放在与程序（macOS 为 `.app`）**同一目录**。
 3. 运行程序，把考勤文件拖进窗口，开启「拖入后自动生成」时会直接执行并提示结果。
+
+### Windows 运行时依赖说明（当前为零依赖）
+
+| 组件 | 处理方式 |
+| --- | --- |
+| **VC++ 运行库**（`vcruntime140.dll`、`msvcp140.dll`） | 构建时注入 `RUSTFLAGS=-C target-feature=+crt-static`，把 MSVC 运行库静态链接进主程序，目标机器无需安装 |
+| **WebView2 Runtime** | 安装包内置微软官方 WebView2 运行时安装器（`webviewInstallMode = offlineInstaller`），安装时静默安装，**无需联网** |
+
+因此 Windows 只发布一个 `setup.exe`（约 210MB，因为内含 WebView2 运行时安装器）。
 
 ### macOS 首次打开提示“已损坏”或“无法验证开发者”
 
